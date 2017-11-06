@@ -1,0 +1,293 @@
+﻿<Controls:MetroWindow
+        
+        xmlns:Controls="http://metro.mahapps.com/winfx/xaml/controls"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:converters="clr-namespace:SpExport.Util.Convert"
+        xmlns:ie="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:Uc="clr-namespace:SpExport.Uc" x:Class="SpExport.MainWindow"
+        xmlns:fa="http://schemas.fontawesome.io/icons/"
+    xmlns:Dialog="clr-namespace:MahApps.Metro.Controls.Dialogs;assembly=MahApps.Metro"
+    Dialog:DialogParticipation.Register="{Binding }"
+        Title="SPList Export" Height="600" Width="800" Loaded="MetroWindow_Loaded">
+    <Controls:MetroWindow.Resources>
+  
+        <Style x:Key="MenuLevel2" BasedOn="{StaticResource MetroTabItem}" TargetType="{x:Type TabItem}">
+            <Setter Property="Controls:ControlsHelper.HeaderFontSize" Value="14"></Setter>
+        </Style>
+
+        <converters:ListTypeConverter  x:Key="ListTypeConverter"/>
+        <converters:BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter" />
+        <converters:InvertBooleanToVisibilityConverter x:Key="InvertBooleanToVisibilityConverter" />
+        <converters:InvertVisibilityConverter  x:Key="InvertVisibilityConverter"/>
+    </Controls:MetroWindow.Resources>
+    <DockPanel>
+        <Grid   DockPanel.Dock="Bottom" Margin="2,5">
+            <Button Visibility="{Binding IsVisiblePrev,Converter={StaticResource BooleanToVisibilityConverter}}"  Command="{Binding PrevCommand}"  Content="Prev." Margin="5"  FontSize="18" HorizontalAlignment="Left" Background="#FF7FD3EC" />
+            <Button Visibility="{Binding IsVisibleNext,Converter={StaticResource BooleanToVisibilityConverter}}"    Command="{Binding NextCommand}" Content="Next"  Margin="5" FontSize="18" HorizontalAlignment="Right" Background="#FF7FD3EC"  />
+
+        </Grid>
+        <TabControl  SelectedIndex="{Binding PageIndex}">
+
+            <TabItem Header="Sharepoint Site" Style="{DynamicResource MenuLevel2}" IsEnabled="False">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.ColumnSpan="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="4*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Uc:LoadingPanel x:Name="loadingPanel"
+                                              IsLoading="{Binding ConnectViewModel.IsLoading}"
+                                             Message="Connecting to Sharepoint site..."
+                                              SubMessage="" 
+                                               Grid.Column="1" />
+
+                        <StackPanel Grid.Column="0" Margin="5" Grid.Row="1">
+                            <Label Content="Web Site Url:" Margin="2" HorizontalAlignment="Right" VerticalAlignment="Top" MinHeight="30"  />
+                            <Label Content="Domain Name:" Margin="2"  HorizontalAlignment="Right" VerticalAlignment="Top"  MinHeight="30"/>
+                            <Label Content="Username :" Margin="2"  HorizontalAlignment="Right" VerticalAlignment="Top"   MinHeight="30"  />
+                            <Label Content="Password:" Margin="2"  HorizontalAlignment="Right" VerticalAlignment="Top"   MinHeight="30" />
+
+                        </StackPanel>
+                        <StackPanel Margin="5" Grid.Row="1" Grid.Column="1">
+                            <TextBox   VerticalAlignment="Top"    MinHeight="30"   Margin="2" Text="{Binding ConnectViewModel.SiteUrl}"/>
+                            <TextBox   VerticalAlignment="Top"    Margin="2"  Text="{Binding ConnectViewModel.Domain}"  MinHeight="30" />
+                            <TextBox   VerticalAlignment="Top"    Margin="2"  Text="{Binding ConnectViewModel.Username}"  MinHeight="30" />
+                            <PasswordBox x:Name="txtPassword"    VerticalAlignment="Top"    Margin="2"  Password="P@ssword123"   MinHeight="30"  />
+                            <CheckBox Content="Save login information" Margin="5" IsChecked="{Binding ConnectViewModel.IsSaveLogin ,Mode=TwoWay}"></CheckBox>
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Connect" Margin="2" VerticalAlignment="Top" Command="{Binding ConnectViewModel.ConnectCommand}"
+                                        CommandParameter="{Binding ElementName=txtPassword}" HorizontalAlignment="Left" />
+                                <Image  Visibility="{Binding ConnectViewModel.IsConnect , Mode=TwoWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Source="Images/checked.png" />
+                                <Image  Visibility="{Binding ConnectViewModel.IsConnect ,Converter={StaticResource InvertVisibilityConverter} , Mode=TwoWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Source="Images/unchecked.png" />
+
+                            </StackPanel>
+                            <TextBlock Text="{Binding ConnectViewModel.Error}" Margin="2,10,2,2" VerticalAlignment="Top"   MinHeight="30"   Foreground="#FFB80808" TextWrapping="WrapWithOverflow" />
+
+                        </StackPanel>
+                    </Grid>
+                    <TextBlock Grid.Column="1" Margin="20" > </TextBlock>
+                </Grid>
+
+            </TabItem>
+            <TabItem Header="Sharepoint Lists"  Style="{DynamicResource MenuLevel2}" IsEnabled="False">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+
+                    <ListBox Grid.Column="0"  ItemsSource="{Binding SpListViewModel.ExistList}" Margin="5"  >
+
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid Margin="0,2">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*" />
+                                        <ColumnDefinition Width="100" />
+                                        <ColumnDefinition Width="100" />
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel Orientation="Horizontal" IsEnabled="{Binding IsSupport}">
+                                        <Image  Visibility="{Binding IsSupport , Converter={ StaticResource BooleanToVisibilityConverter}}" Source="Images/custom-colored.png" Width="24" Height="24"  ></Image>
+                                        <Image  Visibility="{Binding IsSupport , Converter={ StaticResource InvertBooleanToVisibilityConverter}}" Source="Images/disable.png" Width="24" Height="24"  ></Image>
+
+                                        <!--<TextBlock Grid.Column="0" Margin="5" Text="{Binding TypeName}"   />-->
+                                        <CheckBox   Margin="5" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  />
+                                        <TextBlock  Margin="5" Text="{Binding Title}"  FontWeight="Bold" FontSize="12"  />
+                                        <!--<TextBlock  Visibility="{Binding IsSupport , Converter={ StaticResource InvertBooleanToVisibilityConverter}}" Foreground="Red" Text="{Binding TypeName}"></TextBlock>-->
+                                    </StackPanel>
+
+
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Columns"  Style="{DynamicResource MenuLevel2}" IsEnabled="False">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*" />
+                        <ColumnDefinition Width="1*" />
+
+                    </Grid.ColumnDefinitions>
+                    <!--<Uc:TreeViewAdvanced Grid.Column="0" DataContext="{Binding SpListViewModel}" Margin="5" />-->
+                    <TreeView Margin="5"  Grid.Column="0" ItemsSource="{Binding SpListViewModel.GetSupportedLists}">
+
+                        <!-- Conference teamplate -->
+                        <TreeView.ItemTemplate>
+                            <HierarchicalDataTemplate ItemsSource="{Binding Columns}">
+                                <StackPanel Orientation="Horizontal">
+                                   
+                                    <TextBlock  FontWeight="Bold" Text="{Binding Title}" />
+                                </StackPanel>
+                                <!-- Team template -->
+                                <HierarchicalDataTemplate.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal">
+                                            <CheckBox   Margin="5" IsChecked="{Binding IsChecked, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  />
+                                            <TextBlock Text="{Binding Title}" />
+                                        </StackPanel>
+                                        
+                                    </DataTemplate>
+                                </HierarchicalDataTemplate.ItemTemplate>
+
+                            </HierarchicalDataTemplate>
+                        </TreeView.ItemTemplate>
+
+                    </TreeView>
+                    <Uc:LoadingPanel x:Name="loadingPanel1"
+                                     IsLoading="{Binding SpListViewModel.IsColumnLoading}"
+                                     Message="Colemns of table are loading..."
+                                     SubMessage="" 
+                                     Grid.Column="1" />
+                </Grid>
+            </TabItem>
+            <!--test-->
+            <TabItem Header="SQL Database"  Style="{DynamicResource MenuLevel2}" IsEnabled="False">
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid Grid.ColumnSpan="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="2*"/>
+                            <ColumnDefinition Width="4*"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <Uc:LoadingPanel x:Name="loadingPanel3"
+                                         IsLoading="{Binding SqlViewModel.IsLoading}"
+                                         Message="Connecting to Database..."
+                                         SubMessage="" 
+                                         Grid.Column="1" />
+                        <StackPanel Grid.Column="0" Margin="5" Grid.Row="1">
+                            <Label Content="Server:"  Margin="2" HorizontalAlignment="Right" VerticalAlignment="Top" MinHeight="30" />
+                            <Label Content="Username :"  Margin="2" HorizontalAlignment="Right" VerticalAlignment="Top" MinHeight="30" />
+                            <Label Content="Password:"  Margin="2" HorizontalAlignment="Right" VerticalAlignment="Top" MinHeight="30" />
+                        </StackPanel>
+                        <StackPanel Margin="5" Grid.Row="1" Grid.Column="1">
+                            <TextBox   VerticalAlignment="Top"    MinHeight="30"   Margin="2"  Text="{Binding SqlViewModel.Server}" />
+                            <TextBox    VerticalAlignment="Top"    MinHeight="30"   Margin="2"  Text="{Binding SqlViewModel.Username}" />
+                            <PasswordBox x:Name="txtPasswordSql"    VerticalAlignment="Top"    MinHeight="30"   Margin="2"    Password="P@ssword"  />
+
+
+                            <StackPanel Orientation="Horizontal">
+                                <Button Content="Connect"   VerticalAlignment="Top"    MinHeight="30"   Margin="2"  Command="{Binding SqlViewModel.FetchDatabaseCommand}"
+                                        CommandParameter="{Binding ElementName=txtPasswordSql}"/>
+                                <Image  Visibility="{Binding SqlViewModel.IsConnect , Mode=TwoWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Source="Images/checked.png" />
+                                <Image  Visibility="{Binding SqlViewModel.IsConnect ,Converter={StaticResource InvertVisibilityConverter} , Mode=TwoWay}" HorizontalAlignment="Right" VerticalAlignment="Top" Source="Images/unchecked.png" />
+
+                            </StackPanel>
+                            <TextBlock  VerticalAlignment="Top" MinHeight="30" Margin="2,10,2,2"  Text="{Binding SqlViewModel.Error}" Foreground="Red"></TextBlock>
+                        </StackPanel>
+
+
+                    </Grid>
+
+                    <Grid   Grid.Column="1">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="50"/>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="50"/>
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="1*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="1*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel
+                            Grid.Column="1"
+                            Grid.Row="1"
+                            >
+
+
+                            <TextBlock 
+                            Margin="5"
+                            Text="Databse: " FontWeight="Bold" ></TextBlock>
+                            <ComboBox  
+                             
+                            Margin="5"
+                            VerticalAlignment="Top"  
+                            ItemsSource="{Binding SqlViewModel.ExistDatabases}"
+                            SelectedItem="{Binding SqlViewModel.SelectedDatabase}"
+                         />
+                        </StackPanel>
+                    </Grid>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Ready To Replication"  Style="{DynamicResource MenuLevel2}"  IsEnabled="False">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Grid.Row="0" Margin="10">
+                        Do you accept term to continue.
+                    </TextBlock>
+                    <StackPanel Grid.Row="1" Orientation="Horizontal">
+                        <CheckBox Margin="10" Content="Accept term." IsChecked="{Binding ReadyViewModel.AcceptTerm}"/>
+
+                    </StackPanel>
+                </Grid>
+            </TabItem>
+            <TabItem Header="Monitoring"  Style="{DynamicResource MenuLevel2}"  IsEnabled="False">
+                <Grid  >
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1*"/>
+                        <ColumnDefinition Width="1*"/>
+                    </Grid.ColumnDefinitions>
+                    <RichTextBox Grid.Column="1" x:Name="TextLog" Margin="10" IsReadOnly="True" FontFamily="Consolas" FontSize="12"    Background="#FFEEEEEE" BorderThickness="0" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" ScrollViewer.CanContentScroll="True" MinHeight="0" MinWidth="0" HorizontalScrollBarVisibility="Visible" VerticalScrollBarVisibility="Auto"   >
+                        <FlowDocument PageWidth="1000"/>
+                    </RichTextBox>
+
+                    <Grid Grid.Column="0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="*"/>
+                            <RowDefinition Height="Auto"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+                        <StackPanel   Grid.Column="0" Orientation="Vertical">
+                            <CheckBox  IsChecked="{Binding IsOverrideTable, Mode=TwoWay, UpdateSourceTrigger=PropertyChanged}"  Content="Override exist tables."></CheckBox>
+                        <Uc:LoadingPanel x:Name="loadingPanelMonitor"
+                                              IsLoading="{Binding MonitorViewModel.IsBusy}"
+                                             Message="Converting Data to SQL Server "
+                                              SubMessage="Wait until complete..." 
+                                             />
+                        </StackPanel>
+                        <StackPanel Grid.Row="1">
+                            <Button Visibility="{Binding MonitorViewModel.IsBusy ,Converter={StaticResource InvertBooleanToVisibilityConverter}}"  Content="Transfer" HorizontalAlignment="Center" Margin="10" VerticalAlignment="Top" Width="75" Command="{Binding MonitorViewModel. TransferCommand}"  />
+                            <Button Visibility="{Binding MonitorViewModel.IsBusy ,Converter={StaticResource BooleanToVisibilityConverter}}"   Content="Cancel" HorizontalAlignment="Center" Margin="10" VerticalAlignment="Top" Width="75" Command="{Binding MonitorViewModel. CancelTransferCommand}"  />
+
+                        </StackPanel>
+
+                    </Grid>
+
+                </Grid>
+
+            </TabItem>
+
+
+
+
+        </TabControl>
+
+    </DockPanel>
+
+
+
+
+</Controls:MetroWindow>
